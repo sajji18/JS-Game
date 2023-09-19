@@ -2,38 +2,38 @@
 
 class Asteroids{
     constructor(height, width, side){
-        // const obstacleImage = new Image()
-        // obstacleImage.src = null // REPLACE THIS WITH IMAGE PATH
         this.height = height
         this.width = width
         this.side = side
         this.asteroids = []
         this.speed = OBSTACLE_SPEED
+        this.obstacleImage = new Image()
+        this.obstacleImage.src = 'Assets/invader.png' 
     }
-
     generate() {
-        rand_x = Math.floor(Math.random() * (canvas.width)) + 10
+        let rand_x = Math.floor(Math.random() * (canvas.width)) + 10
         this.asteroids.push([
             this.height,
             this.side,
-            this.rand_x,
+            rand_x,
             false 
         ])
     }
-
     draw(){
         for(const i of this.asteroids){
             if(i[0] <= 0 ){
                 continue;
             }
-            ctx.fillStyle = '#0000FF'
-            ctx.fillRect(this.width, this.height, this.side, this.side)
+            ctx.drawImage(this.obstacleImage, 
+                this.width, 
+                this.height, 
+                this.side, 
+                this.side
+                )
         }
     }
-
     update(){
         for(const i of this.asteroids){
-            // update asteroid
             i[0] -= this.speed
             if (i[0] <= 0){
                 const index = this.asteroids.indexOf(i);
@@ -43,21 +43,15 @@ class Asteroids{
             }
         }
     }
-
-    // if bullet hits the asteroid
     checkDestroyed(){
-        for(const i of this.asteroids){
-            if(i[0] <= 0){
-                return true
-            }
-        }
+        return null
     }
 }
 
 class Bullet{
-    constructor(x, y){
-        this.x = x
-        this.y = y
+    constructor(){
+        this.x = Spaceship.x
+        this.y = Spaceship.y
         this.speed = BULLET_SPEED
         this.width = 5
         this.height = 10
@@ -74,22 +68,21 @@ class Bullet{
     }
 
     isOutOfCanvas(){
-        if(this.y <= 0){
-            return true
-        }
+        return null
     }
 }
 
 class Spaceship {
-    constructor() {
-        this.x = canvas.width / 2
-        this.y = 50
+    constructor(x, y) {
+        this.x = x
+        this.y = y
         this.width = 50 
         this.height = 30 
         this.speed = PLAYER_SPEED 
-        this.color = "#00FF00"
         this.isMovingLeft = false 
         this.isMovingRight = false 
+        this.spaceShipImage = new Image()
+        this.spaceShipImage.src = 'Assets/spaceship.png'
     }
 
     moveLeft() {
@@ -123,8 +116,12 @@ class Spaceship {
     }
 
     draw() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(this.spaceShipImage, 
+            this.x, 
+            this.y, 
+            this.width, 
+            this.height
+            );
     }
 
     shoot() {
@@ -140,10 +137,13 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const BG_COLOR = '#121212'
 const PLAYER_SPEED = 2;
 const BULLET_SPEED = 10;
 const OBSTACLE_SPEED = 5
+let asteroids = []
+let bullets = []
+let spaceships = []
+let spaceship = new Spaceship(canvas.width / 2, canvas.height - 50)
 
 let spawnTime = Math.floor(Math.random()*1000 + 500);
 
@@ -151,12 +151,94 @@ let score = 0;
 const scoreDiv = document.getElementById('score');
 const highScoreDiv = document.getElementById('highscore-value');
 
-const background = (color) => {
-    ctx.fillStyle = color;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+const backgroundImage = new Image();
+const spaceShipImage = new Image();
+const asteroidImage = new Image();
+
+backgroundImage.src = 'Assets/startScreenBackground.png';
+spaceShipImage.src = 'Assets/spaceship.png';
+asteroidImage.src = 'Assets/invader.png';
+
+// Ensure all images are loaded before starting the game
+backgroundImage.onload = () => {
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+};
+
+
+function gameloop() {
+    let rand_x = Math.floor(Math.random() * (canvas.width)) + 10;
+    const side = 30
+
+    const newAsteroid = new Asteroids(0, rand_x, side);
+    newAsteroid.generate();
+    asteroids.push(newAsteroid);
+    newAsteroid.draw();
+
+    const newBullet = spaceship.shoot();
+    bullets.push(newBullet);
+    newBullet.draw();
+
+    // Update and draw existing asteroids
+    asteroids.forEach((asteroid) => {
+        asteroid.update();
+        asteroid.draw();
+    });
+
+    // Update and draw existing bullets
+    bullets.forEach((bullet) => {
+        bullet.update();
+        bullet.draw();
+        if (bullet.isOutOfCanvas()) {
+            const index = bullets.indexOf(bullet);
+            if (index !== -1) {
+                bullets.splice(index, 1); // Remove bullets that are out of the canvas
+            }
+        }
+    });
+
+    // Update spaceship position and handle user input
+    spaceship.draw(spaceship.x, spaceship.y);
+
+    for (const bullet of bullets) {
+        for (const asteroid of asteroids) {
+            // Check if the bullet hits the asteroid
+            if (
+                bullet.x + bullet.width >= asteroid[2] &&
+                bullet.x <= asteroid[2] + asteroid[1] &&
+                bullet.y <= asteroid[0] + asteroid[1]
+            ) {
+                // Bullet hit the asteroid
+                // Increase score, remove the bullet, and mark the asteroid as destroyed
+                score++;
+                const bulletIndex = bullets.indexOf(bullet);
+                if (bulletIndex !== -1) {
+                    bullets.splice(bulletIndex, 1);
+                }
+                const asteroidIndex = asteroids.indexOf(asteroid);
+                if (asteroidIndex !== -1) {
+                    asteroids.splice(asteroidIndex, 1);
+                }
+            }
+        }
+    }
+
+    scoreDiv.textContent = score;
+
+    requestAnimationFrame(gameloop);
 }
 
-function gameloop(){
+document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") {
+        spaceship.moveLeft();
+        spaceship.x -= 10
+    } else if (e.key === "ArrowRight") {
+        spaceship.moveRight();
+        spaceship.x += 10
+    } else if (e.key === " ") {
+        const bullet = spaceship.shoot();
+        bullets.push(bullet);
+    }
+});
 
-}
+gameloop()
 
