@@ -6,4 +6,4 @@ Destroying each one increase the score by 1 and if asteroid reaches Left of scre
 A counter for Score and Maximum Score will be displayed on top.
 
 ## Technologies
-HTML and Vanilla JavaScript
+HTML and JavaScript
