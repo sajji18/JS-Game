@@ -1,4 +1,4 @@
-// Plan -> Classes for Asteroids, Bullets => Bullets come from SpaceShip
+// --------------------------------------------------------------------------------------------------------
 
 class Asteroids{
     constructor(height, width, side){
@@ -131,6 +131,8 @@ class Spaceship {
     }
 }
 
+// --------------------------------------------------------------------------------------------------------
+
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
@@ -191,7 +193,7 @@ function gameloop() {
         if (bullet.isOutOfCanvas()) {
             const index = bullets.indexOf(bullet);
             if (index !== -1) {
-                bullets.splice(index, 1); // Remove bullets that are out of the canvas
+                bullets.splice(index, 1); 
             }
         }
     });
@@ -199,16 +201,14 @@ function gameloop() {
     // Update spaceship position and handle user input
     spaceship.draw(spaceship.x, spaceship.y);
 
+    // Collision Between Bullet and Asteroid
     for (const bullet of bullets) {
         for (const asteroid of asteroids) {
-            // Check if the bullet hits the asteroid
             if (
                 bullet.x + bullet.width >= asteroid[2] &&
                 bullet.x <= asteroid[2] + asteroid[1] &&
                 bullet.y <= asteroid[0] + asteroid[1]
             ) {
-                // Bullet hit the asteroid
-                // Increase score, remove the bullet, and mark the asteroid as destroyed
                 score++;
                 const bulletIndex = bullets.indexOf(bullet);
                 if (bulletIndex !== -1) {
@@ -223,7 +223,6 @@ function gameloop() {
     }
 
     scoreDiv.textContent = score;
-
     requestAnimationFrame(gameloop);
 }
 
@@ -242,3 +241,4 @@ document.addEventListener("keydown", (e) => {
 
 gameloop()
 
+// --------------------------------------------------------------------------------------------------------
