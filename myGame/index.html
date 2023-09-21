@@ -8,17 +8,23 @@
 <style>
     body{
         margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: black;
     }
 </style>
 
 <body>
-    <!-- <div class="scores">
-        <p>
-            <span>Score: <span id="score">0</span></span>
-            <span style="float: right;">High Score: <span id="highscore-value">0</span></span>
+    <div style="position: relative;">
+        <p
+        style="position: absolute; z-index: 10; color: white; left: 10px; top: 10px; 
+        margin: 0; font-family: sans-serif; font-size: 14px;
+        ">
+            <span>Score: </span> <span id="scoreEl">0</span>
         </p>
-    </div> -->
-    <canvas></canvas>
+        <canvas></canvas>
+    </div>
     <script src="Js/app.js"></script>
 </body>
 </html>
